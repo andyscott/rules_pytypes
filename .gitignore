@@ -1,0 +1,7 @@
+bazel-*
+MODULE.bazel.lock
+.bazelrc.user
+.idea/
+.ijwb/
+__pycache__
+/target/

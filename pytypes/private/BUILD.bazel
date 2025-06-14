@@ -1,0 +1,48 @@
+load("@aspect_rules_py//py:defs.bzl", "py_binary")
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+
+bzl_library(
+    name = "pytypes",
+    srcs = ["pytypes.bzl"],
+    visibility = ["//pytypes:__subpackages__"],
+    deps = [
+        "//pytypes/private/third_party/rules_py:py_venv",
+        "@aspect_bazel_lib//lib:expand_make_vars",
+        "@aspect_bazel_lib//lib:paths",
+        "@aspect_rules_py//py/private:py_library",
+        "@aspect_rules_py//py/private:py_semantics",
+        "@aspect_rules_py//py/private:transitions",
+        "@aspect_rules_py//py/private/toolchain:types",
+        "@rules_python//python:py_info",
+    ],
+)
+
+py_binary(
+    name = "main",
+    srcs = ["tools/mypy_bin/main.py"],
+    visibility = ["//:__subpackages__"],
+)
+
+bzl_library(
+    name = "resolved_toolchain",
+    srcs = ["resolved_toolchain.bzl"],
+    visibility = ["//pytypes:__subpackages__"],
+)
+
+bzl_library(
+    name = "toolchains_repo",
+    srcs = ["toolchains_repo.bzl"],
+    visibility = ["//pytypes:__subpackages__"],
+)
+
+bzl_library(
+    name = "versions",
+    srcs = ["versions.bzl"],
+    visibility = ["//pytypes:__subpackages__"],
+)
+
+bool_flag(
+    name = "debug",
+    build_setting_default = False,
+)

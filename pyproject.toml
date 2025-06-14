@@ -1,0 +1,7 @@
+[project]
+name = "rules_pytypes"
+dynamic = ["version"]
+
+dependencies = [
+  "mypy",
+]

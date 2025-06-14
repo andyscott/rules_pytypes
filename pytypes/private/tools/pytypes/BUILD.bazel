@@ -1,0 +1,25 @@
+load("@rules_rust//rust:defs.bzl", "rust_binary")
+
+rust_binary(
+    name = "pytypes",
+    srcs = [
+        "src/canonicalize.rs",
+        "src/main.rs",
+        "src/mypy.rs",
+    ],
+    proc_macro_deps = [
+        "@crates//:indoc",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@crates//:argfile",
+        "@crates//:clap",
+        "@crates//:eyre",
+        "@crates//:libc",
+        "@crates//:pathdiff",
+        "@crates//:toml_edit",
+        "@crates//:uv-cache",
+        "@crates//:uv-python",
+        "@crates//:uv-virtualenv",
+    ],
+)

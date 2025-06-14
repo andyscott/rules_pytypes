@@ -1,0 +1,25 @@
+load("@aspect_rules_py//py:defs.bzl", "py_binary")
+load("@rules_pytypes//pytypes:defs.bzl", "pytypes_config", "pytypes_test")
+
+pytypes_config(
+    name = "mypy_config",
+    config = "pyproject.toml",
+)
+
+py_binary(
+    name = "app_bin",
+    srcs = ["__main__.py"],
+    data = [
+        ":mypy_config",
+    ],
+    main = "__main__.py",
+    visibility = ["//:__subpackages__"],
+    deps = ["//pytypes/tests/simple/lib"],
+)
+
+pytypes_test(
+    name = "app_bin_pytypes",
+    deps = [
+        ":app_bin",
+    ],
+)

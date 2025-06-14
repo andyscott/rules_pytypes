@@ -1,0 +1,18 @@
+[package]
+name = "pytypes"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+argfile = "0.2.1"
+clap = { version = "4.5.40", features = [ "derive" ] }
+eyre = "0.6.12"
+indoc = "2.0.6"
+libc = "0.2.174"
+pathdiff = "0.2.3"
+pty-process = "0.5.1"
+toml_edit = "0.22.27"
+
+uv-cache = { git = "https://github.com/astral-sh/uv", rev = "a9ab39ad6fbfb7b4925cc360fa4786f0ec9128bb" }
+uv-python = { git = "https://github.com/astral-sh/uv", rev = "a9ab39ad6fbfb7b4925cc360fa4786f0ec9128bb" }
+uv-virtualenv = { git = "https://github.com/astral-sh/uv", rev = "a9ab39ad6fbfb7b4925cc360fa4786f0ec9128bb" }

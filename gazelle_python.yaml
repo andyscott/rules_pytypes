@@ -1,0 +1,15 @@
+# GENERATED FILE - DO NOT EDIT!
+#
+# To update this file, run:
+#   bazel run //:gazelle_python_manifest.update
+manifest:
+  modules_mapping:
+    91844386ccf7a24691a0__mypyc: mypy
+    mypy: mypy
+    mypy_extensions: mypy_extensions
+    mypyc: mypy
+    pathspec: pathspec
+    typing_extensions: typing_extensions
+  pip_repository:
+    name: pip
+integrity: 989c34e500b82a89586bfeceb8758f87435ac1433abad765fecbf4a248366a39

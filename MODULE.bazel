@@ -1,0 +1,67 @@
+"Bazel dependencies"
+
+module(
+    name = "rules_pytypes",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "bazel_skylib", version = "1.4.1")
+bazel_dep(name = "package_metadata", version = "0.0.2")
+bazel_dep(name = "platforms", version = "0.0.5")
+bazel_dep(name = "rules_python", version = "1.4.1")
+bazel_dep(name = "aspect_rules_py", version = "1.6.0")
+
+PYTHON_VERSION = "3.13.2"
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = PYTHON_VERSION,
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pip",
+    python_version = PYTHON_VERSION,
+    requirements_lock = "//:requirements.txt",
+)
+use_repo(pip, "pip")
+
+bazel_dep(name = "gazelle", version = "0.35.0", dev_dependency = True, repo_name = "bazel_gazelle")
+bazel_dep(name = "bazel_skylib_gazelle_plugin", version = "1.4.1", dev_dependency = True)
+bazel_dep(name = "rules_python_gazelle_plugin", version = "1.4.1", dev_dependency = True)
+bazel_dep(name = "aspect_bazel_lib", version = "1.32.1", dev_dependency = True)
+bazel_dep(name = "buildifier_prebuilt", version = "6.1.2", dev_dependency = True)
+
+uv = use_extension(
+    "@rules_python//python/uv:uv.bzl",
+    "uv",
+    dev_dependency = True,
+)
+uv.configure(version = "0.6.2")
+
+pytypes = use_extension("//pytypes:extensions.bzl", "pytypes")
+pytypes.toolchain(pytypes_version = "1.14.2")
+use_repo(pytypes, "pytypes_toolchains")
+
+register_toolchains("@pytypes_toolchains//:all")
+
+bazel_dep(name = "rules_rust", version = "0.61.0")
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2024",
+    versions = ["1.87.0"],
+)
+
+crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
+crate.from_cargo(
+    name = "crates",
+    cargo_lockfile = "//:Cargo.lock",
+    manifests = [
+        "//:Cargo.toml",
+        "//pytypes/private/tools/pytypes:Cargo.toml",
+    ],
+)
+use_repo(crate, "crates")
