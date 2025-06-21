@@ -24,6 +24,11 @@ py_binary(
     visibility = ["//:__subpackages__"],
 )
 
+bool_flag(
+    name = "debug",
+    build_setting_default = False,
+)
+
 bzl_library(
     name = "resolved_toolchain",
     srcs = ["resolved_toolchain.bzl"],
@@ -40,9 +45,4 @@ bzl_library(
     name = "versions",
     srcs = ["versions.bzl"],
     visibility = ["//pytypes:__subpackages__"],
-)
-
-bool_flag(
-    name = "debug",
-    build_setting_default = False,
 )

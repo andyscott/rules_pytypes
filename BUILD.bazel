@@ -1,10 +1,6 @@
-load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
 load("@bazel_skylib//rules:native_binary.bzl", "native_test")
 load("@package_metadata//rules:package_metadata.bzl", "package_metadata")
-load("@pip//:requirements.bzl", "all_whl_requirements")
 load("@rules_python//python/uv:lock.bzl", "lock")
-load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
-load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
 
 # gazelle:map_kind py_library py_library @aspect_rules_py//py:defs.bzl
 # gazelle:map_kind py_binary py_binary @aspect_rules_py//py:defs.bzl
@@ -19,19 +15,6 @@ package_metadata(
     visibility = ["//visibility:public"],
 )
 
-gazelle_binary(
-    name = "gazelle_bin",
-    languages = [
-        "@bazel_skylib_gazelle_plugin//bzl",
-        "@rules_python_gazelle_plugin//python:python",
-    ],
-)
-
-gazelle(
-    name = "gazelle",
-    gazelle = "gazelle_bin",
-)
-
 lock(
     name = "requirements",
     srcs = ["pyproject.toml"],
@@ -41,17 +24,4 @@ lock(
 native_test(
     name = "requirements_test",
     src = "requirements.update",
-)
-
-modules_mapping(
-    name = "modules_map",
-    wheels = all_whl_requirements,
-)
-
-gazelle_python_manifest(
-    name = "gazelle_python_manifest",
-    modules_mapping = ":modules_map",
-    pip_repository_name = "pip",
-    requirements = "//:requirements.txt",
-    #include_stub_packages = True,
 )
