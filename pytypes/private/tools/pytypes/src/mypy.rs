@@ -87,6 +87,9 @@ pub(crate) fn run(common_options: CommonOptions, args: MypyArgs) -> Result<()> {
     std::fs::create_dir_all(&venv_root)?;
     let venv_root = venv_root.canonicalize()?;
 
+    // We use UV to build the base venv. I don't think a lot goes into the base venv so
+    // an eventual/possible TODO is switch to building it ourselves based off of whatever UV
+    // is doing.
     let cache = uv_cache::Cache::temp()?;
     let interpreter = uv_python::Interpreter::query(&args.python_bin, &cache)?;
     let venv = uv_virtualenv::create_venv(
@@ -98,24 +101,26 @@ pub(crate) fn run(common_options: CommonOptions, args: MypyArgs) -> Result<()> {
         false,
         false,
     )?;
-
     let site_package_path = venv
         .site_packages()
         .nth(0)
         .ok_or(eyre!("missing site packages path"))?;
 
-    let pth_file = std::fs::File::create(site_package_path.join("_runner.pth"))?;
+    // Write a pth file with entries for imports off of all of the PyInfo providers.
+    let pth_file = std::fs::File::create(site_package_path.join("_pytypes.pth"))?;
     let mut pth_writer = std::io::BufWriter::new(pth_file);
     pth_writer.write_all(
         indoc! {"
-        # all the paths
+        # all dependencies for pytypes
     "}
         .as_bytes(),
     )?;
     for import in &args.imports {
-        if import == "_main" {
+        if import == "_main" || import.starts_with("_main/") {
+            // First party deps
             // TODO?
         } else {
+            // Third party deps
             let entry_path = Path::new(&format!("./external/{}", import))
                 .canonicalize()
                 .map_err(|e| eyre!("missing import {}: {}", import, e))?;
@@ -126,6 +131,11 @@ pub(crate) fn run(common_options: CommonOptions, args: MypyArgs) -> Result<()> {
     }
     drop(pth_writer);
 
+    // Mypy's color output is handled by mypy.util.FancyFormatter and despite all of the
+    // alleged "FORCE_COLOR" tricks FancyFormatter _will not_ output color if it doesn't think
+    // color is supported.
+    //
+    // We fake a tty and we fake color term info.
     unsafe {
         let mut master: c_int = 0;
         let mut slave: c_int = 0;
