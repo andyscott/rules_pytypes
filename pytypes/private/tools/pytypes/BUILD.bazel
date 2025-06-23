@@ -5,9 +5,9 @@ rust_binary(
     srcs = [
         "src/actionfiles.rs",
         "src/canonicalize.rs",
+        "src/check.rs",
         "src/main.rs",
         "src/mypy.rs",
-        "src/propagate.rs",
     ],
     proc_macro_deps = [
         "@crates//:indoc",

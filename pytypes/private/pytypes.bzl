@@ -181,7 +181,7 @@ def _pytypes_impl(target, ctx):
     marker_file = ctx.actions.declare_file(ctx.rule.attr.name + ".pytypes")
 
     args = _pytypes_tool_args(ctx)
-    args.add("propagate")
+    args.add("check")
     args.add("--failure-mode", ctx.attr._failure_mode[BuildSettingInfo].value)
     args.add("--marker-file", marker_file)
     args.add_all(inputs)

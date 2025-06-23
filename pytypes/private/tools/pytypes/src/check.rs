@@ -9,7 +9,7 @@ use eyre::{Context, Result, eyre};
 use crate::{CommonOptions, actionfiles::ActionFiles};
 
 #[derive(Debug, Parser)]
-pub(crate) struct PropagateArgs {
+pub(crate) struct CheckArgs {
 
     /// What to do on validation failure(s).
     #[arg(short, long, value_enum, default_value_t = FailureMode::Hard)]
@@ -29,7 +29,7 @@ pub(crate) struct PropagateArgs {
     pub action_files: Vec<PathBuf>,
 }
 
-impl PropagateArgs {
+impl CheckArgs {
     pub fn chunked_action_files(&self) -> Result<Vec<ActionFiles>> {
         let n = 2;
         let chunked = self.action_files.chunks_exact(n);
@@ -64,7 +64,7 @@ enum FailureMode {
 }
 
 
-pub(crate) fn run(_common: CommonOptions, args: PropagateArgs) -> Result<()> {
+pub(crate) fn run(_common: CommonOptions, args: CheckArgs) -> Result<()> {
     let mut stdout = std::io::stdout().lock();
 
     let mut all_success = true;

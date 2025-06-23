@@ -4,7 +4,7 @@ use eyre::Result;
 mod actionfiles;
 mod canonicalize;
 mod mypy;
-mod propagate;
+mod check;
 
 #[derive(Debug, Parser)]
 #[clap(
@@ -32,7 +32,8 @@ struct CommonOptions {
 
 #[derive(Debug, Subcommand)]
 enum Command {
-    /// Runs Mypy typing.
+    /// Runs Mypy typing and writes out status files. Never fails; we use the
+    /// check command to escalate errors.
     Mypy(mypy::MypyArgs),
 
     /// Canonicalizes a typing config file, e.g. extracts and normalizes `[tool.mypy]`
@@ -40,7 +41,7 @@ enum Command {
     Canonicalize(canonicalize::CanonicalizeArgs),
 
     /// Propagates/escalates errors from typing action runs.
-    Propagate(propagate::PropagateArgs),
+    Check(check::CheckArgs),
 }
 
 fn main() -> Result<()> {
@@ -53,6 +54,6 @@ fn main() -> Result<()> {
     match cli.command {
         Command::Mypy(args) => mypy::run(cli.common_options, args),
         Command::Canonicalize(args) => canonicalize::run(cli.common_options, args),
-        Command::Propagate(args) => propagate::run(cli.common_options, args),
+        Command::Check(args) => check::run(cli.common_options, args),
     }
 }
