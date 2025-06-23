@@ -2,11 +2,13 @@
 
 load(
     "//pytypes/private:pytypes.bzl",
-    _pytypes_aspect = "pytypes_aspect",
+    _make_pytypes_aspect = "make_pytypes_aspect",
+    _make_pytypes_test = "make_pytypes_test",
     _pytypes_config = "pytypes_config",
-    _pytypes_test = "pytypes_test",
+    _pytypes_type_mappings = "pytypes_type_mappings",
 )
 
+make_pytypes_aspect = _make_pytypes_aspect
+make_pytypes_test = _make_pytypes_test
 pytypes_config = _pytypes_config
-pytypes_aspect = _pytypes_aspect
-pytypes_test = _pytypes_test
+pytypes_type_mappings = _pytypes_type_mappings

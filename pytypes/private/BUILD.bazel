@@ -27,6 +27,7 @@ py_binary(
 bool_flag(
     name = "debug",
     build_setting_default = False,
+    visibility = ["//visibility:public"],
 )
 
 bzl_library(
