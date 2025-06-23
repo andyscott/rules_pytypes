@@ -1,7 +1,6 @@
 use std::{
     fmt::Display,
-    fs::OpenOptions,
-    io::{BufRead, BufReader, Write},
+    io::{BufReader, Write},
     os::{
         fd::{FromRawFd, RawFd},
         unix::process::CommandExt,
@@ -10,14 +9,15 @@ use std::{
 };
 
 use clap::Parser;
-use eyre::{Context, OptionExt, Result, eyre};
+use eyre::{OptionExt, Result, eyre};
 use indoc::indoc;
 use libc::c_int;
 
-use crate::CommonOptions;
+use crate::{CommonOptions, actionfiles::ActionFiles};
 
 #[derive(Debug, Parser)]
 pub(crate) struct MypyArgs {
+
     /// The path to the Python binary configured by the toolchain.
     #[arg(short, long, value_name = "PATH")]
     python_bin: PathBuf,
@@ -112,7 +112,6 @@ pub(crate) fn run(common_options: CommonOptions, args: MypyArgs) -> Result<()> {
         .nth(0)
         .ok_or(eyre!("missing site packages path"))?;
 
-
     if common_options.debug {
         let paths = std::fs::read_dir(".").unwrap();
         eprintln!("$ find . -depth -maxdepth 2");
@@ -137,25 +136,20 @@ pub(crate) fn run(common_options: CommonOptions, args: MypyArgs) -> Result<()> {
     )?;
 
     for import in &args.imports {
-
         //let path = rlocation!(r, import).expect("fuck");
         //println!("?? {} {}", path.exists(), path.display());
-
 
         if import == "_main" {
             // First party deps
             // TODO?
             //todo!("oh noes, _main");
         } else if let Some(p) = import.strip_prefix("_main/") {
-
-
             let entry_path = Path::new(p)
                 .canonicalize()
                 .map_err(|e| eyre!("missing import {}: {}", import, e))?;
             let relative =
                 pathdiff::diff_paths(entry_path, &site_package_path).ok_or_eyre("blerg")?;
             writeln!(pth_writer, "{}", relative.display())?;
-
         } else {
             // Third party deps
             let entry_path = Path::new(&format!("./external/{}", import))
@@ -221,30 +215,14 @@ pub(crate) fn run(common_options: CommonOptions, args: MypyArgs) -> Result<()> {
         } else {
             libc::close(slave);
             let pty = std::fs::File::from_raw_fd(master as RawFd);
-            let reader = BufReader::new(pty);
-            let mut stdout = std::io::stdout().lock();
-            let mut output = std::io::BufWriter::new(
-                OpenOptions::new()
-                    .create(true)
-                    .write(true)
-                    .truncate(true)
-                    .open(&args.output_file)
-                    .wrap_err("problem opening output file")?,
-            );
 
-            for line in reader.lines() {
-                let line = line?;
-                let formatted = format!("\x1b[2mmypy:\x1b[22m {}", line);
-                writeln!(stdout, "{}", formatted)?;
-                writeln!(output, "{}", formatted)?;
-            }
+            let action = ActionFiles::new(args.output_file.clone(), args.status_file.clone());
+
+            action.write_output(BufReader::new(pty))?;
             let mut status: c_int = 0;
             libc::waitpid(pid, &mut status, 0);
-            if status == 0 {
-            std::fs::write(&args.status_file, status.to_string())
-                .wrap_err("problem writing status file")?;
-            }
-            std::process::exit(status);
+            action.write_status_code(status)?;
+            Ok(())
         }
     }
 }

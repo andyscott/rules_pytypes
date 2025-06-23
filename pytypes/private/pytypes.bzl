@@ -9,8 +9,9 @@ load("@rules_python//python:py_info.bzl", "PyInfo")
 PytypesInfo = provider(
     doc = "General output from a pytypes run.",
     fields = {
-        "output_file": "stdout",
-        "status_file": "the status code",
+        "output_file": "typing stdout/stderr",
+        "status_file": "typing run status code",
+        "marker_file": "marker for success",
     },
 )
 
@@ -42,6 +43,7 @@ _pytypes_tool_attrs = dict({
         executable = True,
     ),
     "_debug": attr.label(default = "@rules_pytypes//pytypes/private:debug"),
+    "_failure_mode": attr.label(default = "@rules_pytypes//pytypes:failure_mode"),
 })
 
 def _pytypes_tool_args(ctx):
@@ -108,7 +110,7 @@ def _pytypes_impl(target, ctx):
                 PytypesMetaInfo(skip = True),
             ]
 
-    output_file = ctx.actions.declare_file(ctx.rule.attr.name + ".mypy.stdout")
+    output_file = ctx.actions.declare_file(ctx.rule.attr.name + ".mypy.output")
     status_file = ctx.actions.declare_file(ctx.rule.attr.name + ".mypy.status")
 
     py_toolchain = _py_semantics.resolve_toolchain(ctx)
@@ -175,7 +177,25 @@ def _pytypes_impl(target, ctx):
         arguments = [args],
     )
 
-    output_files = depset([output_file, status_file])
+    inputs = depset([output_file, status_file])
+    marker_file = ctx.actions.declare_file(ctx.rule.attr.name + ".pytypes")
+
+    args = _pytypes_tool_args(ctx)
+    args.add("propagate")
+    args.add("--failure-mode", ctx.attr._failure_mode[BuildSettingInfo].value)
+    args.add("--marker-file", marker_file)
+    args.add_all(inputs)
+
+    ctx.actions.run(
+        mnemonic = "PytypesPropagate",
+        progress_message = "pytypes(output) %{label}",
+        inputs = inputs,
+        outputs = [marker_file],
+        executable = ctx.executable._pytypes_tool,
+        arguments = [args],
+    )
+
+    output_files = depset([output_file, status_file, marker_file])
     return [
         OutputGroupInfo(**{
             output_group: output_files
@@ -184,6 +204,7 @@ def _pytypes_impl(target, ctx):
         PytypesInfo(
             output_file = output_file,
             status_file = status_file,
+            marker_file = marker_file,
         ),
     ]
 

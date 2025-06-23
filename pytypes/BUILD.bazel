@@ -1,8 +1,19 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("//pytypes/private:resolved_toolchain.bzl", "resolved_toolchain")
 
 # For stardoc to reference the files
 exports_files(["defs.bzl"])
+
+string_flag(
+    name = "failure_mode",
+    build_setting_default = "soft",
+    values = [
+        "hard",
+        "soft",
+    ],
+    visibility = ["//visibility:public"],
+)
 
 # This is the target rule authors should put in their "toolchains"
 # attribute in order to get a runtime for the correct platform.
