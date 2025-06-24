@@ -33,7 +33,6 @@ impl CheckArgs {
     pub fn chunked_action_files(&self) -> Result<Vec<ActionFiles>> {
         let n = 2;
         let chunked = self.action_files.chunks_exact(n);
-
         let remainder = chunked.remainder();
         if !remainder.is_empty() {
             return Err(eyre!(
@@ -46,7 +45,6 @@ impl CheckArgs {
                     .join(",")
             ));
         }
-
         Ok(chunked
             .map(|chunk| ActionFiles {
                 output: chunk[0].clone(),
@@ -62,7 +60,6 @@ enum FailureMode {
     Soft,
     Hard,
 }
-
 
 pub(crate) fn run(_common: CommonOptions, args: CheckArgs) -> Result<()> {
     let mut stdout = std::io::stdout().lock();

@@ -93,7 +93,7 @@ pub(crate) fn run(common_options: CommonOptions, args: MypyArgs) -> Result<()> {
     std::fs::create_dir_all(&venv_root)?;
     let venv_root = venv_root.canonicalize()?;
 
-    // We use UV to build the base venv. I don't think a lot goes into the base venv so
+    // We use uv to build the base venv. I don't think a lot goes into the base venv so
     // an eventual/possible TODO is switch to building it ourselves based off of whatever UV
     // is doing.
     let cache = uv_cache::Cache::temp()?;
@@ -136,13 +136,8 @@ pub(crate) fn run(common_options: CommonOptions, args: MypyArgs) -> Result<()> {
     )?;
 
     for import in &args.imports {
-        //let path = rlocation!(r, import).expect("fuck");
-        //println!("?? {} {}", path.exists(), path.display());
-
         if import == "_main" {
-            // First party deps
-            // TODO?
-            //todo!("oh noes, _main");
+            // TODO: identify situations where we need an entry for plain "_main".
         } else if let Some(p) = import.strip_prefix("_main/") {
             let entry_path = Path::new(p)
                 .canonicalize()
@@ -164,12 +159,6 @@ pub(crate) fn run(common_options: CommonOptions, args: MypyArgs) -> Result<()> {
 
     let mut cmd = std::process::Command::new(&venv_root.join("bin/python"));
     cmd.env("VIRTUAL_ENV", &venv_root)
-        //.current_dir(args.bin_dir.canonicalize()?)
-        // .env("MYPYPATH", vec![
-        //     Path::new(".").canonicalize()?.to_string_lossy(),
-        //     args.bin_dir.canonicalize()?.to_string_lossy(),
-        // ].join(":"))
-        .env("TERM", "xterm-256color")
         .args(args.python_flags)
         .arg("-m")
         .arg("mypy")
@@ -210,7 +199,7 @@ pub(crate) fn run(common_options: CommonOptions, args: MypyArgs) -> Result<()> {
             libc::dup2(slave, libc::STDERR_FILENO);
             libc::close(master);
             libc::close(slave);
-            let err = cmd.exec();
+            let err = cmd.env("TERM", "xterm-256color").exec();
             Err(eyre!(err))
         } else {
             libc::close(slave);

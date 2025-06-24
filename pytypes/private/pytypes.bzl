@@ -230,7 +230,6 @@ _pytypes_type_mappings_rule = rule(
             mandatory = True,
         ),
     },
-    # dependency_resolution_rule = True,
 )
 
 _FIXED_MAPPINGS = {
@@ -242,6 +241,16 @@ _FIXED_MAPPINGS = {
 def pytypes_default_resolve_mapping(package):
     """
     Default mappings from type stubs to packages.
+
+    Args:
+        package: A normalized package name.
+
+    Returns:
+        If package is a types stub package, return the name of the matching regular
+        package. If it's a regular package, return None.
+        E.g.:
+            "foo" -> None
+            "foo-stubs" -> "foo"
     """
     if package in _FIXED_MAPPINGS:
         return _FIXED_MAPPINGS[package]
@@ -252,11 +261,19 @@ def pytypes_default_resolve_mapping(package):
     return None
 
 def _warn(msg):
+    # buildifier: disable=print
     print("{red}{msg}{nc}".format(red = "\033[0;31m", msg = msg, nc = "\033[0m"))
 
 def pytypes_type_mappings(
         name,
         all_requirements):
+    """
+    Declares mappings from type stubs to packages.
+
+    Args:
+        name: The name of the type mappings target.
+        all_requirements: All requirements, as provided by rules_python.
+    """
     lookup = {}
     for r in all_requirements:
         r = Label(r)
